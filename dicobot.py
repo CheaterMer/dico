@@ -5,9 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import datetime
-#access_token = os.environ["MTIyMjEyNjQxMzIyMjUxMDY0Mg.GB8TZ1.iuT9jy7hgaJg8MuOieBfx9mexb1vYDaXSOzu30"]
-TOKEN = 'MTIyMjEyNjQxMzIyMjUxMDY0Mg.GB8TZ1.iuT9jy7hgaJg8MuOieBfx9mexb1vYDaXSOzu30'
-    #'MTE3Mjc5MTI4Njk4MjUwODYxNA.GmIar5.Tu15aJndiFj8HTlNMkdDNGQsiJMd2Of6ZlJWUY'
+
 
 source_channel_id = 1222101866524184656  # 여기에 원본 채널의 ID를 입력하세요
 target_channel_id = 1222022681415909477   # 여기에 대상 채널의 ID를 입력하세요
