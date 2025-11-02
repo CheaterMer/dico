@@ -1,28 +1,15 @@
 {
-  "name": "bot",
+  "name": "dico",
   "version": "1.0.0",
-  "description": "",
+  "type": "module",
   "main": "index.js",
-  "directories": {
-    "lib": "lib",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
     "discord.js": "^14.14.1",
     "mysql2": "^3.6.0",
     "axios": "^1.6.7",
     "dotenv": "^16.4.1"
-
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CheaterMer/dico.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/CheaterMer/dico/issues"
-  },
-  "homepage": "https://github.com/CheaterMer/dico#readme"
+  }
 }
