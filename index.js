@@ -66,3 +66,47 @@ if (fs.existsSync(menusPath)) {
 await initTables();
 
 client.login(process.env.TOKEN);
+
+// ======= CRASH LOG TO DISCORD (EMBED VERSION) =======
+import { EmbedBuilder } from "discord.js";
+
+const LOG_CHANNEL_ID = "1406901680485826623"; // ⚠️ 로그 전송 채널
+
+async function sendCrashLogToDiscord(error) {
+  try {
+    const channel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+    if (!channel) return;
+
+    const embed = new EmbedBuilder()
+      .setTitle("⚠️ Bot Crash Detected")
+      .setColor(0xff4444)
+      .addFields(
+        { name: "Error Message", value: `\`\`\`${error?.message || String(error)}\`\`\`` },
+      )
+      .setTimestamp()
+      .setFooter({ text: "TSBAC System Crash Logger" });
+
+    // Stack 이 있으면 추가 (길면 자동 처리)
+    if (error?.stack) {
+      embed.addFields({ name: "Stack Trace", value: `\`\`\`${(error.stack).slice(0, 1900)}\`\`\`` });
+    }
+
+    await channel.send({ embeds: [embed] });
+  } catch (err) {
+    console.error("❌ Crash log send failed:", err);
+  }
+}
+
+// ✅ 처리되지 않은 예외
+process.on("uncaughtException", (err) => {
+  console.error("🔥 Uncaught Exception:", err);
+  sendCrashLogToDiscord(err);
+});
+
+// ✅ Promise 오류 (Unhandled Rejection)
+process.on("unhandledRejection", (reason) => {
+  console.error("💥 Unhandled Rejection:", reason);
+  sendCrashLogToDiscord(reason);
+});
+
+// ====================================
