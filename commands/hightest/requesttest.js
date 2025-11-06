@@ -53,11 +53,31 @@ export default {
     //  return interaction.editReply(`⏳ 시험 요청까지 **${remaining}일** 남았습니다.`);
     //}
 
+    let targetTier = null;
+
+    if (member.roles.cache.has(LT3)) {
+      targetTier = "HT3";
+    } else if (member.roles.cache.has(HT3)) {
+      targetTier = "LT2";
+    } else if (member.roles.cache.has(LT2)) {
+      targetTier = "HT2";
+    } else if (member.roles.cache.has(HT2)) {
+      targetTier = "LT1";
+    } else if (member.roles.cache.has(LT1)) {
+      targetTier = "HT1";
+    } else if (member.roles.cache.has(HT1)) {
+      return interaction.editReply("🏆 You are already at the highest rank (HT1). No further tests available.");
+    } else {
+      return interaction.editReply("❌ Your current rank does not match any known tier progression.");
+    }
+
+
     const [result] = await pool.query(`
       INSERT INTO ht_requests (guild_id, player_id, target_tier, created_by, expiry_at)
-      VALUES (?, ?, NULL, ?, ?)`,
-      [guild.id, userId, userId, now + expiry * 86400000]
+      VALUES (?, ?, ?, ?, ?)`,
+      [guild.id, userId, targetTier, userId, now + expiry * 86400000]
     );
+
     const requestId = result.insertId;
 
     const baseName = member.user.username.toLowerCase().replace(/[^a-z0-9]/g, "");
