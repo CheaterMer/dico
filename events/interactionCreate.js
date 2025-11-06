@@ -42,5 +42,21 @@ export default {
       const handler = client.menus.get(interaction.customId);
       if (handler) return handler.execute(interaction, client).catch(() => {});
     }
+
+    // Modal Submit
+    if (interaction.isModalSubmit()) {
+      for (const [prefix, handler] of client.modals) {
+        if (interaction.customId.startsWith(prefix)) {
+          try {
+            return await handler.execute(interaction, client);
+          } catch (err) {
+            console.error(`❌ Modal Error (${interaction.customId}):`, err);
+            return interaction.reply({ content: "❌ Modal failed.", ephemeral: true });
+          }
+        }
+      }
+    }
+
+
   }
 };

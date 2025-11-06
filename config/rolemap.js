@@ -18,6 +18,16 @@ export const rankRoleMap = {
   'LT5': '1408395342713585724',
 };
 
+export const promotionMap = {
+  LT3: "HT3",
+  HT3: "LT2",
+  LT2: "HT2",
+  HT2: "LT1",
+  LT1: "HT1",
+  HT1: null // 최상위 티어 (더 이상 승급 없음)
+};
+
+
 export const regionRoleMap = {
   'Japan': '1431460359402819785',
   'Singapore': '1431286613316603934',

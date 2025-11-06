@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initTables } from "./config/db.js";
+import { checkHtExpiry } from "./scheduler/checkHtExpiry.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const client = new Client({
 client.commands = new Collection();
 client.buttons = new Collection();
 client.menus = new Collection();
+client.modals = new Collection();
 
 // -------- Load Commands --------
 const commandsPath = path.join(__dirname, "commands");
@@ -61,6 +63,19 @@ if (fs.existsSync(menusPath)) {
     if (menu.customId) client.menus.set(menu.customId, menu);
   }
 }
+
+// -------- Load Modals --------
+const modalsPath = path.join(__dirname, "interactions", "modals");
+if (fs.existsSync(modalsPath)) {
+  for (const file of fs.readdirSync(modalsPath).filter(f => f.endsWith(".js"))) {
+    const modal = (await import(`file://${path.join(modalsPath, file)}`)).default;
+    if (modal.customIdStartsWith && modal.execute) {
+      client.modals.set(modal.customIdStartsWith, modal);
+    }
+  }
+}
+
+
 
 // -------- Init Database --------
 await initTables();
@@ -110,3 +125,11 @@ process.on("unhandledRejection", (reason) => {
 });
 
 // ====================================
+
+// 1시간마다 자동 체크
+setInterval(() => {
+  checkHtExpiry(client);
+}, 60 * 60 * 1000);
+
+// 최초 실행도 한 번 해줌
+checkHtExpiry(client);

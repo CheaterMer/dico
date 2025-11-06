@@ -21,6 +21,7 @@ export async function initTables() {
     CREATE TABLE IF NOT EXISTS guild_settings (
       guild_id VARCHAR(32) PRIMARY KEY,
       bloxlink_api VARCHAR(255),
+      ht_request_expiry_days INT DEFAULT 14,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
@@ -40,68 +41,74 @@ export async function initTables() {
   `);
 
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS test_sessions (
-      session_id INT AUTO_INCREMENT PRIMARY KEY,
-      guild_id VARCHAR(32),
-      channel_id VARCHAR(32),
-      message_id VARCHAR(32),
-      region VARCHAR(32),
-      link TEXT,
-      current_index INT DEFAULT 0,
-      hoster_tag VARCHAR(128),
-      is_recruiting TINYINT(1) DEFAULT 1,
-      status ENUM('OPEN','STOPPED','CLOSED') DEFAULT 'OPEN',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS session_testers (
-      session_id INT,
-      user_id VARCHAR(32),
-      PRIMARY KEY (session_id, user_id),
-      FOREIGN KEY (session_id) REFERENCES test_sessions(session_id) ON DELETE CASCADE
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS session_participants (
-      session_id INT,
-      user_id VARCHAR(32),
-      joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (session_id, user_id),
-      FOREIGN KEY (session_id) REFERENCES test_sessions(session_id) ON DELETE CASCADE
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS session_history (
-      session_id INT,
-      user_id VARCHAR(32),
-      PRIMARY KEY (session_id, user_id),
-      FOREIGN KEY (session_id) REFERENCES test_sessions(session_id) ON DELETE CASCADE
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS session_call_channels (
-      session_id INT,
-      channel_id VARCHAR(32),
-      PRIMARY KEY (session_id, channel_id),
-      FOREIGN KEY (session_id) REFERENCES test_sessions(session_id) ON DELETE CASCADE
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS interaction_logs (
+    CREATE TABLE IF NOT EXISTS ht_requests (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      guild_id VARCHAR(32),
-      user_id VARCHAR(32),
-      command VARCHAR(128),
-      details JSON,
+      guild_id VARCHAR(32) NOT NULL,
+      player_id VARCHAR(32) NOT NULL,
+      target_tier VARCHAR(32) NULL,
+      status ENUM('OPEN','TESTING','REVIEW','PASSED','FAILED') DEFAULT 'OPEN',
+      panel_message_id VARCHAR(32) DEFAULT NULL,
+      panel_channel_id VARCHAR(32) DEFAULT NULL,
+      created_by VARCHAR(32) NOT NULL,
+      expiry_at BIGINT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
-  console.log('✅ Database Ready!');
+await pool.query(`ALTER TABLE ht_requests ADD COLUMN IF NOT EXISTS required_opponents INT DEFAULT 1;`).catch(()=>{});
+await pool.query(`ALTER TABLE ht_requests ADD COLUMN IF NOT EXISTS opponents JSON DEFAULT '[]';`).catch(()=>{});
+await pool.query(`ALTER TABLE ht_requests ADD COLUMN IF NOT EXISTS phase INT DEFAULT 0;`).catch(()=>{});
+await pool.query(`ALTER TABLE ht_requests ADD COLUMN IF NOT EXISTS allowed_roles JSON DEFAULT '[]';`).catch(()=>{});
+await pool.query(`ALTER TABLE ht_requests ADD COLUMN IF NOT EXISTS request_channel_id VARCHAR(32) DEFAULT NULL;`).catch(()=>{});
+
+
+
+
+  await pool.query(`
+    ALTER TABLE ht_requests
+    ADD COLUMN IF NOT EXISTS required_opponents INT DEFAULT 1;
+  `).catch(() => {});
+
+  await pool.query(`
+    ALTER TABLE ht_requests
+    ADD COLUMN IF NOT EXISTS opponents JSON DEFAULT '[]';
+  `).catch(() => {});
+
+  await pool.query(`
+    ALTER TABLE ht_requests
+    ADD COLUMN IF NOT EXISTS phase INT DEFAULT 0;
+  `).catch(() => {});
+
+  await pool.query(`
+    ALTER TABLE ht_requests
+    ADD COLUMN IF NOT EXISTS allowed_roles JSON DEFAULT '[]';
+  `).catch(() => {});
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ht_phase_results (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      request_id INT NOT NULL,
+      phase INT NOT NULL,
+      opponent_id VARCHAR(32) NOT NULL,
+      result ENUM('PASS','FAIL') NOT NULL,
+      recorded_by VARCHAR(32) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (request_id) REFERENCES ht_requests(id) ON DELETE CASCADE
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ht_losses (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      guild_id VARCHAR(32) NOT NULL,
+      player_id VARCHAR(32) NOT NULL,
+      recorded_by VARCHAR(32) NOT NULL,
+      reason TEXT,
+      terrible TINYINT(1) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  console.log('✅ Database synced with full High Test + Phase System.');
 }
+
