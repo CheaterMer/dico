@@ -19,7 +19,7 @@ const blocked = [HT1, LT3];
 export default {
   data: new SlashCommandBuilder()
     .setName("requesttest")
-    .setDescription("시험 준비가 되었음을 관리진에게 알립니다."),
+    .setDescription("This message notifies the staff that I am ready for the test."),
 
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
@@ -29,11 +29,11 @@ export default {
     const member = await guild.members.fetch(userId);
 
     if (blocked.some(id => member.roles.cache.has(id))) {
-      return interaction.editReply("🚫 이 등급은 시험 요청이 불가능합니다.");
+      return interaction.editReply("🚫 This rank is not eligible to request a test.");
     }
 
     if (!allowed.some(id => member.roles.cache.has(id))) {
-      return interaction.editReply("⏳ 아직 시험 볼 수 있는 티어가 아닙니다.");
+      return interaction.editReply("⏳ You are not yet eligible to take the test.");
     }
 
     const [[row]] = await pool.query(`
