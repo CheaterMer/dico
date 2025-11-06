@@ -2,11 +2,17 @@
 import { pool } from "../../config/db.js";
 import { EmbedBuilder } from "discord.js";
 
+const HIGH_TESTER_ROLE = "1408415932660846673";
+
 export default {
   customIdStartsWith: "phasepass:",
 
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
+
+      if (!executor.roles.cache.has(HIGH_TESTER_ROLE)) {
+      return interaction.editReply("🚫 You must be a **High Tester**");
+    }
 
     const requestId = interaction.customId.split(":")[1];
 

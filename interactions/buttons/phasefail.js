@@ -2,11 +2,17 @@
 import { pool } from "../../config/db.js";
 import { createFailureEmbed } from "../../utils/highTestUtils.js";
 
+const HIGH_TESTER_ROLE = "1408415932660846673";
+
 export default {
   customIdStartsWith: "phasefail:",
 
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
+
+        if (!executor.roles.cache.has(HIGH_TESTER_ROLE)) {
+      return interaction.editReply("🚫 You must be a **High Tester**");
+    }
 
     const requestId = interaction.customId.split(":")[1];
 
