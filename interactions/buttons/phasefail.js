@@ -8,9 +8,12 @@ export default {
   customIdStartsWith: "phasefail:",
 
   async execute(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: false });
 
-        if (!executor.roles.cache.has(HIGH_TESTER_ROLE)) {
+        const guild = interaction.guild;
+    const executor = await guild.members.fetch(interaction.user.id);
+
+    if (!executor.roles.cache.has(HIGH_TESTER_ROLE)) {
       return interaction.editReply("🚫 You must be a **High Tester**");
     }
 
